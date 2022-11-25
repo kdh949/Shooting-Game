@@ -219,7 +219,7 @@ void PlayerHit()
 	for (int i = 0; i < MAXENEMY; i++)
 	{
 		if (enemy[i].exist == FALSE) continue;
-		if (enemy[i].y == player.y && abs(enemy[i].x - player.x) <= 0)
+		if (enemy[i].y == player.y && abs(enemy[i].x - player.x) <= 0) //abs : ���� �Լ�
 		{
 			player.hp -= 1;
 			if (player.hp <= 0)
@@ -450,12 +450,16 @@ void TextEnemyFrame(int frame)
 }
 
 void PrintWall() {
-	for (int i = BX; i < BW + 1; i++)
-	{
-		gotoxy(i, 0);
-		printf("��");
-		gotoxy(i, 27);
-		printf("��");
+	gotoxy(BX, 0);
+	printf("�̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢�");
+	gotoxy(BX, 27);
+	printf("�̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢̢�");
+
+	for (int i = BX; i < BW + 1; i++) {
+		//gotoxy(i, 0);
+		//printf("��");
+		//gotoxy(i, 27);
+		//printf("��");
 	}
 
 	for (int i = BY; i < BH + 1; i++)
