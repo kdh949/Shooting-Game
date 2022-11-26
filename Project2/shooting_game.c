@@ -2,21 +2,106 @@
 * 1. 왼쪽 비행기 안닿게(1칸 띄우기)
 * 2. 비행기(l-o-l), 적디자인 (ж)
 * 3. 색상 정하는 것 -비행기 : 흰색, 총알: 민트/하늘색, 테두리: 그대로, 적: 그대로, 
-* 4. 벽면이 움직이고, 적이 깜빡거리고
+* 4. 벽면이 움직이고, 적이 깜빡거리고 => 더블 버퍼링을 이용하여 해결 예정
 * 5. 난이도 (적이 출현하는 속도)
 * 6. 총알속도 조절 설명  (+, - 설명) 
 * 7. 종료화면을 화려하게
 * 8. 적한테 부딪혔을때 비행기 색상 빨간색으로 (0.3초 정도) 바뀜
 * 9. 감점기준이 비행기 어디든지 닿았을 때
 * 10. *파일포인터 이용 -> 순위표(점수 높은 순 정렬/등수), 닉네임 입력/10등까지만, score.txt (닉네임 점수\n) //일부완료
-* 11. 계속 하겠는지 확인
+* 11. 계속 하겠는지 확인 
 */
 
 #include <stdio.h>
 #include <string.h>
-#include <windows.h>
 #include <stdlib.h>
+#include <windows.h>
 #include <time.h>
+
+#define BX 20 
+#define BY 1  
+#define BW 80 // 게임판의 넓이
+#define BH 26 // 게임판의 높이
+#define UX 50 // 플레이어 초기 위치
+#define UY 12 // 플레이어 초기 위치
+#define MAXBULLET 8
+#define MAXENEMY 10
+
+/*===============================*/
+/* 더블 버퍼링 테스트 변수 부분(시작) */
+HANDLE hBuffer[2];  //버퍼 핸들
+int nScreenIndex;   //현재 선택 버퍼가 뭔지 저장
+/* 더블 버퍼링 테스트 변수 부분(끝) */
+/*===============================*/
+
+/*===============================*/
+/* 더블 버퍼링 테스트 함수 부분(시작) */
+/* 1. 버퍼 생성 */
+void CreatBuffer()
+{
+	COORD size = { BW, BH };
+	CONSOLE_CURSOR_INFO cci;
+	SMALL_RECT rect;
+	rect.Bottom = 0;
+	rect.Left = 0;
+	rect.Right = BW - 1;;
+	rect.Top = BH - 1;
+
+	hBuffer[0] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+	SetConsoleScreenBufferSize(hBuffer[0], size);
+	SetConsoleWindowInfo(hBuffer[0], TRUE, &rect);
+
+	hBuffer[1] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+	SetConsoleScreenBufferSize(hBuffer[1], size);
+	SetConsoleWindowInfo(hBuffer[1], TRUE, &rect);
+
+	cci.dwSize = 1;
+	cci.bVisible = FALSE;
+	SetConsoleCursorInfo(hBuffer[0], &cci);
+	SetConsoleCursorInfo(hBuffer[1], &cci);
+}
+
+/*2. 버퍼 쓰기 x, y, 문자 */
+void WriteBuffer(int x, int y, char str[]) 
+{
+	DWORD dw;
+	COORD CursorPosition = { x, y };
+	SetConsoleCursorPosition(hBuffer[nScreenIndex], CursorPosition);
+	WriteFile(hBuffer[nScreenIndex], str, strlen(str), &dw, NULL);}
+
+/*3. 버퍼 전환*/
+void FlippingBuffer() 
+{
+	Sleep(33);  //부드러운 플리핑을 위한 0.033초의 딜레이(사람은 1초에 33장의 연속적인 그림을 볼 때 가장 부드럽게 인식하고 합니다. 그래서 0.033초)
+	SetConsoleActiveScreenBuffer(hBuffer[nScreenIndex]);
+	nScreenIndex = !nScreenIndex;
+}
+
+/* 4. 버퍼 내용 지우기 */
+void ClearBuffer()
+{
+	COORD Coor = { 0,0 };
+	DWORD dw;
+	FillConsoleOutputCharacter(hBuffer[nScreenIndex], ' ', BW * BH, Coor, &dw);
+}
+
+/*5. 버퍼해제*/
+void DeleteBuffer() 
+{
+	CloseHandle(hBuffer[0]);
+	CloseHandle(hBuffer[1]);
+
+}
+
+/* [+]버퍼링 전용 색상지정*/
+void SetColor(unsigned short color)
+{
+	SetConsoleTextAttribute(hBuffer[nScreenIndex], color);
+}
+
+/* 더블 버퍼링 테스트 함수 부분(끝) */
+/*===============================*/
+
 
 /* 지연 함수 */
 void delay(int n) {
@@ -28,6 +113,9 @@ void gotoxy(int x, int y) { //gotoxy함수
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
 
+void clear() {
+	system("cls");
+}
 
 /* cmd창 좌표 이동 함수 */
 //void gotoxy(int x, int y) {
@@ -45,14 +133,6 @@ void color(int n) {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), n);
 }
 
-#define BX 20 
-#define BY 1  
-#define BW 80 // 게임판의 넓이
-#define BH 26 // 게임판의 높이
-#define UX 50 // 플레이어 초기 위치
-#define UY 12 // 플레이어 초기 위치
-#define MAXBULLET 8
-#define MAXENEMY 10
 
 BOOL IsKeyDown(int Key)
 {
@@ -107,6 +187,8 @@ int enemyframe = 3;
 
 int main()
 {
+	CreatBuffer();
+
 	player.x = UX;
 	player.y = UY;
 	player.hp = 3;
@@ -117,22 +199,24 @@ int main()
 	srand((unsigned)time(NULL));
 	system("cls");
 
-	ScoreBoard(1, 1, 2); //test 곧 삭제예정
+	//ScoreBoard(1, 1, 2); //test 곧 삭제예정
 
-	char nick[10];
+	//char nick[10];
 
-	printf("닉네임을 입력해주세요!: ");
-	scanf("%s", nick);
-	system("cls");
+	//printf("닉네임을 입력해주세요!: ");
+	//scanf("%s", nick);
+	//system("cls");
 
 	showcursor(0); //커서 숨기기
 	gotoxy(player.x, player.y);
 	printf("U★U");
 	
-	PrintWall();
+	
 	
 	int count = 0;
 	while(1) {
+		//FlippingBuffer();
+		PrintWall();
 		PrintFloor();
 		gotoxy(player.x, player.y);
 		printf("U●U");
@@ -226,9 +310,11 @@ int main()
 		score += 1;
 		Sleep(20);
 		count++;
+		FlippingBuffer();
 	}
 
-	ScoreBoard(nick, score, 1);
+	//ScoreBoard(nick, score, 1);
+
 	system("cls");
 	gotoxy(UX, UY);
 	printf(" Game Over");
@@ -237,9 +323,14 @@ int main()
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
 	Sleep(1000);
 	system("cls");
-	ScoreBoard(nick, score, 2);
+
+	//ScoreBoard(nick, score, 2);
+
 	Sleep(1000);
 	getch();
+
+	/* 더블 버퍼링 테스트 */
+	DeleteBuffer(); //버퍼링 삭제
 
 	return 0;
 }
@@ -397,10 +488,13 @@ void MoveEnemy()
 					enemy[i].y -= 1;
 					break;
 				}
-				gotoxy(enemy[i].x, enemy[i].y);
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 6);
-				puts("★");
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+				/*gotoxy(enemy[i].x, enemy[i].y);*/
+				//SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 6);
+				/*puts("★");*/
+				SetColor(6);
+				WriteBuffer(enemy[i].x, enemy[i].y, "★");
+				SetColor(7);
+				//SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 			}
 		}
 	}
@@ -416,12 +510,14 @@ void Enemyfall()
 		{
 			if (enemy[i].y == pBullet[j].y && abs(enemy[i].x - pBullet[j].x) <= 2)
 			{
-				gotoxy(pBullet[j].x, pBullet[j].y);
-				printf("  ");
+				/*gotoxy(pBullet[j].x, pBullet[j].y);
+				printf("  ");*/
+				WriteBuffer(pBullet[j].x, pBullet[j].y, "  ");
 				enemy[i].exist = FALSE;
 				pBullet[j].exist = FALSE;
-				gotoxy(enemy[i].x, enemy[i].y);
-				printf("     ");
+				/*gotoxy(enemy[i].x, enemy[i].y);
+				printf("     ");*/
+				WriteBuffer(enemy[i].x, enemy[i].y, "     ");
 				score += 10;
 				break;
 			}
@@ -434,16 +530,19 @@ void MoveBullet() {
 	for (int i = 0; i < MAXBULLET; i++)
 	{
 		if (pBullet[i].exist == TRUE) {
-			gotoxy(pBullet[i].x, pBullet[i].y);
-			printf("  ");
+			/*gotoxy(pBullet[i].x, pBullet[i].y);
+			printf("  ");*/
+			WriteBuffer(pBullet[i].x, pBullet[i].y, "  ");
 			pBullet[i].y--;
-			gotoxy(pBullet[i].x, pBullet[i].y);
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);
-			printf("||");
+			/*gotoxy(pBullet[i].x, pBullet[i].y);
+			printf("||");*/
+			WriteBuffer(pBullet[i].x, pBullet[i].y, "||");
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 			if (pBullet[i].y <= 1) {
-				gotoxy(pBullet[i].x, pBullet[i].y);
-				printf("  ");
+				/*gotoxy(pBullet[i].x, pBullet[i].y);
+				printf("  ");*/
+				WriteBuffer(pBullet[i].x, pBullet[i].y, "  ");
 				pBullet[i].exist = FALSE;
 			}
 		}
@@ -484,18 +583,23 @@ void PrintWall() {
 	//printf("▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩");
 
 	for (int i = BX; i < BW + 1; i++) {
-		gotoxy(i, 0);
-		printf("▩");
-		gotoxy(i, 27);
-		printf("▩");
+		//gotoxy(i, 0);
+		WriteBuffer(i, 0, "▩");
+		//printf("▩");
+		
+		//gotoxy(i, 27);
+		WriteBuffer(i, 27, "▩");
+		//printf("▩");
 	}
 
 	for (int i = BY; i < BH + 1; i++)
 	{
-		gotoxy(20, i);
-		printf("▩");
-		gotoxy(80, i);
-		printf("▩");
+		WriteBuffer(20, i, "▩");
+		//gotoxy(20, i);
+		//printf("▩");
+		WriteBuffer(80, i, "▩");
+		//gotoxy(80, i);
+		//printf("▩");
 	}
 }
 
@@ -619,3 +723,4 @@ void char_swap(char a[10], char b[10]) {
 	strcpy(a, b);
 	strcpy(b, tmp);
 }
+
