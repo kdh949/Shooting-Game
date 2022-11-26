@@ -13,25 +13,29 @@
 */
 
 #include <stdio.h>
-#include <conio.h>
+#include <string.h>
 #include <windows.h>
 #include <stdlib.h>
 #include <time.h>
 
-void randomize() {
-	srand((unsigned)time(NULL));
-}
-
+/* 지연 함수 */
 void delay(int n) {
 	Sleep(n);
 }
-void clrscr() {
-	system("cls");
+
+void gotoxy(int x, int y) { //gotoxy함수 
+	COORD pos = { x,y };
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
-void gotoxy(int x, int y) {
- 	COORD Cur = { x, y }; //좌표를 정의하는 구조체를 x, y로 초기화
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Cur);
-}
+
+
+/* cmd창 좌표 이동 함수 */
+//void gotoxy(int x, int y) {
+// 	COORD Cur = { x, y }; //좌표를 정의하는 구조체를 x, y로 초기화
+//	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Cur);
+//}
+
+/* cmd창 커서 표시 제어함수 */
 void showcursor(int bShow) {
 	CONSOLE_CURSOR_INFO CurInfo = { 20, bShow }; //커서 구조체 변수로 선언하고, 커서의 크기와 숨김여부로 초기화 
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &CurInfo);
@@ -76,6 +80,11 @@ struct Enemy
 	BOOL exist;
 } enemy[MAXENEMY];
 
+struct score {
+	char nick[10];
+	int score;
+}list[50];
+
 void PlayerHit();
 void CreateEnemy();
 void CreateBullet();
@@ -85,18 +94,18 @@ void MoveEnemy();
 void MoveBullet();
 void TextEnemyFrame(int frame);
 void Enemyfall();
+void ScoreBoard(char nick[10], int score, int mode);
+void int_swap(int* a, int* b);
+void char_swap(char a[10], char b[10]);
 
 int score = 0;
 int enemyframe = 3;
 
 int main()
 {
-	showcursor(0); //커서 숨기기
 	player.x = UX;
 	player.y = UY;
 	player.hp = 3;
-
-	randomize();
 
 	for (int i = 0; i < MAXENEMY; i++)
 		enemy[i].count = 0;
@@ -104,13 +113,22 @@ int main()
 	srand((unsigned)time(NULL));
 	system("cls");
 
+	ScoreBoard(1, 1, 2); //test 곧 삭제예정
+
+	char nick[10];
+
+	printf("닉네임을 입력해주세요!: ");
+	scanf("%s", nick);
+	system("cls");
+
+	showcursor(0); //커서 숨기기
 	gotoxy(player.x, player.y);
 	printf("U★U");
-
+	
 	PrintWall();
-
-	for (int count = 0;; count++)
-	{
+	
+	int count = 0;
+	while(1) {
 		PrintFloor();
 		gotoxy(player.x, player.y);
 		printf("U●U");
@@ -196,13 +214,17 @@ int main()
 		}
 		if (count % enemyframe == 0)
 			MoveEnemy();
+
 		PlayerHit();
 		MoveBullet();
 		Enemyfall();
+
 		score += 1;
 		Sleep(20);
+		count++;
 	}
 
+	ScoreBoard(nick, score, 1);
 	system("cls");
 	gotoxy(UX, UY);
 	printf(" Game Over");
@@ -210,7 +232,11 @@ int main()
 	printf("최종점수 : %d", score);
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
 	Sleep(1000);
+	system("cls");
+	ScoreBoard(nick, score, 2);
+	Sleep(1000);
 	getch();
+
 	return 0;
 }
 
@@ -399,12 +425,11 @@ void Enemyfall()
 	}
 }
 
-void MoveBullet()
-{
+/* 총 쏘는 함수 */
+void MoveBullet() {
 	for (int i = 0; i < MAXBULLET; i++)
 	{
-		if (pBullet[i].exist == TRUE)
-		{
+		if (pBullet[i].exist == TRUE) {
 			gotoxy(pBullet[i].x, pBullet[i].y);
 			printf("  ");
 			pBullet[i].y--;
@@ -412,8 +437,7 @@ void MoveBullet()
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);
 			printf("||");
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
-			if (pBullet[i].y <= 1)
-			{
+			if (pBullet[i].y <= 1) {
 				gotoxy(pBullet[i].x, pBullet[i].y);
 				printf("  ");
 				pBullet[i].exist = FALSE;
@@ -450,16 +474,16 @@ void TextEnemyFrame(int frame)
 }
 
 void PrintWall() {
-	gotoxy(BX, 0);
-	printf("▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩");
-	gotoxy(BX, 27);
-	printf("▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩");
+	//gotoxy(BX, 0);
+	//printf("▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩");
+	//gotoxy(BX, 27);
+	//printf("▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩");
 
 	for (int i = BX; i < BW + 1; i++) {
-		//gotoxy(i, 0);
-		//printf("▩");
-		//gotoxy(i, 27);
-		//printf("▩");
+		gotoxy(i, 0);
+		printf("▩");
+		gotoxy(i, 27);
+		printf("▩");
 	}
 
 	for (int i = BY; i < BH + 1; i++)
@@ -512,4 +536,67 @@ void PrintFloor()
 
 	gotoxy(35, 28);
 	printf("                                        ");
+}
+
+/*스코어보드 함수, 1=점수 쓰기, 2= 점수 읽기*/
+void ScoreBoard(char nick[10], int new_score, int mode) {
+	FILE* fp;
+	
+	if (mode == 1) { //쓰기모드
+		fp = fopen("score.txt", "a");
+		fprintf(fp, "%s %d\n", nick, new_score);
+		fclose(fp);
+	}
+
+	if (mode == 2) { //읽기모드
+		fp = fopen("score.txt", "r");
+
+		if (fp == NULL) {
+			fprintf(stderr, "오류발생!!");
+			exit(0);
+		}
+
+		printf("%-15s점수\n", "닉네임");
+		
+		/* 데이터를 불러와서 배열에 저장하는 부분 */
+		int n = 0;
+		while (feof(fp) == 0) {
+			fscanf(fp, "%s %d\n", list[n].nick, &list[n].score);
+			n++;
+		}
+		fclose(fp);
+
+		/* 값 정렬 후 배열 변경 부분 */
+		for (int i = 0; i < n - 1; i++) 
+		{
+			for (int j = i + 1; j < n; j++) 
+			{
+				if (list[i].score < list[j].score) 
+				{
+					int_swap(&list[i].score, &list[j].score);
+					char_swap(list[i].nick, list[j].nick);
+				}
+			}	
+		}
+
+		/* 데이터 출력 부분 */
+		for (int i = 0; i < n; i++) {
+			printf("%-14s%d\n", list[i].nick, list[i].score);
+		}
+	}
+	
+} 
+
+void int_swap(int *a, int *b) {
+	int tmp;
+	tmp = *a;
+	*a = *b;
+	*b = tmp;
+}
+
+void char_swap(char a[10], char b[10]) {
+	char tmp[10];
+	strcpy(tmp, a);
+	strcpy(a, b);
+	strcpy(b, tmp);
 }
