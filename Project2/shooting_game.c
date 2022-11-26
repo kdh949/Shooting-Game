@@ -8,7 +8,7 @@
 * 7. 종료화면을 화려하게
 * 8. 적한테 부딪혔을때 비행기 색상 빨간색으로 (0.3초 정도) 바뀜
 * 9. 감점기준이 비행기 어디든지 닿았을 때
-* 10. *파일포인터 이용 -> 순위표(점수 높은 순 정렬/등수), 닉네임 입력/10등까지만, score.txt (닉네임 점수\n)
+* 10. *파일포인터 이용 -> 순위표(점수 높은 순 정렬/등수), 닉네임 입력/10등까지만, score.txt (닉네임 점수\n) //일부완료
 * 11. 계속 하겠는지 확인
 */
 
@@ -39,6 +39,10 @@ void gotoxy(int x, int y) { //gotoxy함수
 void showcursor(int bShow) {
 	CONSOLE_CURSOR_INFO CurInfo = { 20, bShow }; //커서 구조체 변수로 선언하고, 커서의 크기와 숨김여부로 초기화 
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &CurInfo);
+}
+
+void color(int n) {
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), n);
 }
 
 #define BX 20 
@@ -555,8 +559,6 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 			fprintf(stderr, "오류발생!!");
 			exit(0);
 		}
-
-		printf("%-15s점수\n", "닉네임");
 		
 		/* 데이터를 불러와서 배열에 저장하는 부분 */
 		int n = 0;
@@ -580,8 +582,25 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 		}
 
 		/* 데이터 출력 부분 */
+		printf("등수  %-12s스코어\n", "닉네임"); //점수판 출력 상위 라벨
+		if (n == 0) {
+			printf("===== 순위가 없습니다! ====");
+		}
+		int rank = 0;
+		int recursive = 0;
 		for (int i = 0; i < n; i++) {
-			printf("%-14s%d\n", list[i].nick, list[i].score);
+				if (i > 0 && (list[i].score == list[i - 1].score)) { //동점이라면
+				printf(" %-6d%-12s%d\n", rank, list[i].nick, list[i].score);
+				recursive++;
+				continue;
+			}
+
+			rank++;
+			rank += recursive;
+			if (rank > 10) //10등까지만 출력
+				break;
+			printf(" %-6d%-12s%d\n", rank, list[i].nick, list[i].score);
+			recursive = 0;
 		}
 	}
 	
