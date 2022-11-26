@@ -44,8 +44,8 @@ void CreatBuffer()
 	SMALL_RECT rect;
 	rect.Bottom = 0;
 	rect.Left = 0;
-	rect.Right = BW - 1;;
-	rect.Top = BH - 1;
+	rect.Right = BW;
+	rect.Top = BH;
 
 	hBuffer[0] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 	SetConsoleScreenBufferSize(hBuffer[0], size);
@@ -67,12 +67,14 @@ void WriteBuffer(int x, int y, char str[])
 	DWORD dw;
 	COORD CursorPosition = { x, y };
 	SetConsoleCursorPosition(hBuffer[nScreenIndex], CursorPosition);
-	WriteFile(hBuffer[nScreenIndex], str, strlen(str), &dw, NULL);}
+	WriteFile(hBuffer[nScreenIndex], str, strlen(str), &dw, NULL);
+}
+
 
 /*3. 버퍼 전환*/
 void FlippingBuffer() 
 {
-	Sleep(33);  //부드러운 플리핑을 위한 0.033초의 딜레이(사람은 1초에 33장의 연속적인 그림을 볼 때 가장 부드럽게 인식하고 합니다. 그래서 0.033초)
+	//Sleep(33);  //부드러운 플리핑을 위한 0.033초의 딜레이(사람은 1초에 33장의 연속적인 그림을 볼 때 가장 부드럽게 인식하고 합니다. 그래서 0.033초)
 	SetConsoleActiveScreenBuffer(hBuffer[nScreenIndex]);
 	nScreenIndex = !nScreenIndex;
 }
@@ -80,9 +82,9 @@ void FlippingBuffer()
 /* 4. 버퍼 내용 지우기 */
 void ClearBuffer()
 {
-	COORD Coor = { 0,0 };
+	COORD Coor = { BH,BW };
 	DWORD dw;
-	FillConsoleOutputCharacter(hBuffer[nScreenIndex], ' ', BW * BH, Coor, &dw);
+	FillConsoleOutputCharacter(hBuffer[!nScreenIndex], ' ', BH*BW, Coor, &dw);
 }
 
 /*5. 버퍼해제*/
@@ -188,7 +190,7 @@ int enemyframe = 3;
 int main()
 {
 	CreatBuffer();
-
+	
 	player.x = UX;
 	player.y = UY;
 	player.hp = 3;
@@ -208,62 +210,89 @@ int main()
 	//system("cls");
 
 	showcursor(0); //커서 숨기기
-	gotoxy(player.x, player.y);
-	printf("U★U");
+	//gotoxy(player.x, player.y);
+	//printf("U★U");
 	
+	WriteBuffer(player.x, player.y, "U★U");
 	
 	
 	int count = 0;
 	while(1) {
-		//FlippingBuffer();
 		PrintWall();
 		PrintFloor();
-		gotoxy(player.x, player.y);
-		printf("U●U");
+		/*gotoxy(player.x, player.y);
+		printf("U●U");*/
+		WriteBuffer(player.x, player.y, "U★U");
+
 		if (count % 2 == 0)
 		{
 			if (IsKeyDown(VK_LEFT))
 			{
 				if (player.x > BX + 2)
 				{
-					gotoxy(player.x, player.y);
-					printf("    ");
+					/*gotoxy(player.x, player.y);
+					printf("    ");*/
+					WriteBuffer(player.x, player.y, "    ");
+					FlippingBuffer();
+					WriteBuffer(player.x, player.y, "    ");
 					player.x--;
-					gotoxy(player.x, player.y);
-					printf("U●U");
+					/*gotoxy(player.x, player.y);
+					printf("U●U");*/
+					WriteBuffer(player.x, player.y, "U★U");
+					FlippingBuffer();
+					WriteBuffer(player.x, player.y, "U★U");
+					
 				}
 			}
 			if (IsKeyDown(VK_RIGHT))
 			{
 				if (player.x < BW - 5)
 				{
-					gotoxy(player.x, player.y);
-					printf("    ");
+					/*gotoxy(player.x, player.y);
+					printf("    ");*/
+					WriteBuffer(player.x, player.y, "    ");
+					FlippingBuffer();
+					WriteBuffer(player.x, player.y, "    ");
 					player.x++;
-					gotoxy(player.x, player.y);
-					printf("U●U");
+					/*gotoxy(player.x, player.y);
+					printf("U●U");*/
+					WriteBuffer(player.x, player.y, "U★U");
+					FlippingBuffer();
+					WriteBuffer(player.x, player.y, "U★U");
 				}
 			}
 			if (IsKeyDown(VK_UP))
 			{
 				if (player.y > 2)
 				{
-					gotoxy(player.x, player.y);
-					printf("    ");
+					/*gotoxy(player.x, player.y);
+					printf("    ");*/
+					WriteBuffer(player.x, player.y, "    ");
+					FlippingBuffer();
+					WriteBuffer(player.x, player.y, "    ");
 					player.y--;
-					gotoxy(player.x, player.y);
-					printf("U●U");
+					/*gotoxy(player.x, player.y);
+					printf("U●U");*/
+					WriteBuffer(player.x, player.y, "U★U");
+					FlippingBuffer();
+					WriteBuffer(player.x, player.y, "U★U");
 				}
 			}
 			if (IsKeyDown(VK_DOWN))
 			{
 				if (player.y < 25)
 				{
-					gotoxy(player.x, player.y);
-					printf("    ");
+					/*gotoxy(player.x, player.y);
+					printf("    ");*/
+					WriteBuffer(player.x, player.y, "    ");
+					FlippingBuffer();
+					WriteBuffer(player.x, player.y, "    ");
 					player.y++;
-					gotoxy(player.x, player.y);
-					printf("U●U");
+					/*gotoxy(player.x, player.y);
+					printf("U●U");*/
+					WriteBuffer(player.x, player.y, "U★U");
+					FlippingBuffer();
+					WriteBuffer(player.x, player.y, "U★U");
 				}
 			}
 		}
@@ -298,10 +327,11 @@ int main()
 		}
 		if (rand() % 5 == 0)
 		{
-			CreateEnemy();
+			FlippingBuffer();		
 		}
-		if (count % enemyframe == 0)
+		if (count % enemyframe == 0) {
 			MoveEnemy();
+		}
 
 		PlayerHit();
 		MoveBullet();
@@ -310,10 +340,14 @@ int main()
 		score += 1;
 		Sleep(20);
 		count++;
-		FlippingBuffer();
+		//ClearBuffer();
+
 	}
 
+	DeleteBuffer(); //버퍼링 삭제
+
 	//ScoreBoard(nick, score, 1);
+
 
 	system("cls");
 	gotoxy(UX, UY);
@@ -328,9 +362,7 @@ int main()
 
 	Sleep(1000);
 	getch();
-
-	/* 더블 버퍼링 테스트 */
-	DeleteBuffer(); //버퍼링 삭제
+	
 
 	return 0;
 }
@@ -455,8 +487,11 @@ void MoveEnemy()
 
 			if (enemy[i].exist == TRUE)
 			{
-				gotoxy(enemy[i].x, enemy[i].y);
-				printf("  ");
+				/*gotoxy(enemy[i].x, enemy[i].y);
+				printf("  ");*/
+				WriteBuffer(enemy[i].x, enemy[i].y, "  ");
+				FlippingBuffer();
+				WriteBuffer(enemy[i].x, enemy[i].y, "  ");
 				switch (enemy[i].direction)
 				{
 				case 1: // ↑
@@ -492,6 +527,8 @@ void MoveEnemy()
 				//SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 6);
 				/*puts("★");*/
 				SetColor(6);
+				WriteBuffer(enemy[i].x, enemy[i].y, "★");
+				FlippingBuffer();
 				WriteBuffer(enemy[i].x, enemy[i].y, "★");
 				SetColor(7);
 				//SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
@@ -537,8 +574,10 @@ void MoveBullet() {
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);
 			/*gotoxy(pBullet[i].x, pBullet[i].y);
 			printf("||");*/
-			WriteBuffer(pBullet[i].x, pBullet[i].y, "||");
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+			SetColor(4);
+			//WriteBuffer(pBullet[i].x, pBullet[i].y, "||");
+			SetColor(7);
+			//SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 			if (pBullet[i].y <= 1) {
 				/*gotoxy(pBullet[i].x, pBullet[i].y);
 				printf("  ");*/
@@ -573,7 +612,8 @@ void TextEnemyFrame(int frame)
 		textframe = 1;
 		break;
 	}
-	printf("총알 속도 : %d", textframe);
+	//printf("총알 속도 : %d", textframe);
+	//WriteBuffer()
 }
 
 void PrintWall() {
