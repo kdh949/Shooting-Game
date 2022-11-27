@@ -2,7 +2,7 @@
 * 1. 왼쪽 비행기 안닿게(1칸 띄우기)
 * 2. 비행기(l-o-l), 적디자인 (ж)
 * 3. 색상 정하는 것 -비행기 : 흰색, 총알: 민트/하늘색, 테두리: 그대로, 적: 그대로, 
-* 4. 벽면이 움직이고, 적이 깜빡거리고 => 더블 버퍼링을 이용하여 해결 예정
+* 4. 벽면이 움직이고, 적이 깜빡거리고 => 더블 버퍼링 이용 필연적 //쉽지 않을 것으로 보임
 * 5. 난이도 (적이 출현하는 속도)
 * 6. 총알속도 조절 설명  (+, - 설명) 
 * 7. 종료화면을 화려하게
@@ -27,6 +27,9 @@
 #define MAXBULLET 8
 #define MAXENEMY 10
 
+#define BWF 90 // 게임판의 넓이
+#define BHF 32 // 게임판의 높이
+
 /*===============================*/
 /* 더블 버퍼링 테스트 변수 부분(시작) */
 HANDLE hBuffer[2];  //버퍼 핸들
@@ -39,13 +42,13 @@ int nScreenIndex;   //현재 선택 버퍼가 뭔지 저장
 /* 1. 버퍼 생성 */
 void CreatBuffer()
 {
-	COORD size = { BW, BH };
+	COORD size = { BWF, BHF };
 	CONSOLE_CURSOR_INFO cci;
 	SMALL_RECT rect;
 	rect.Bottom = 0;
 	rect.Left = 0;
-	rect.Right = BW;
-	rect.Top = BH;
+	rect.Right = BWF;
+	rect.Top = BHF;
 
 	hBuffer[0] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 	SetConsoleScreenBufferSize(hBuffer[0], size);
@@ -82,9 +85,9 @@ void FlippingBuffer()
 /* 4. 버퍼 내용 지우기 */
 void ClearBuffer()
 {
-	COORD Coor = { BH,BW };
+	COORD Coor = { BHF,BWF };
 	DWORD dw;
-	FillConsoleOutputCharacter(hBuffer[!nScreenIndex], ' ', BH*BW, Coor, &dw);
+	FillConsoleOutputCharacter(hBuffer[!nScreenIndex], ' ', BHF*BWF, Coor, &dw);
 }
 
 /*5. 버퍼해제*/
@@ -219,6 +222,8 @@ int main()
 	int count = 0;
 	while(1) {
 		PrintWall();
+		FlippingBuffer();
+		PrintWall();
 		PrintFloor();
 		/*gotoxy(player.x, player.y);
 		printf("U●U");*/
@@ -327,7 +332,7 @@ int main()
 		}
 		if (rand() % 5 == 0)
 		{
-			FlippingBuffer();		
+			CreateEnemy();
 		}
 		if (count % enemyframe == 0) {
 			MoveEnemy();
@@ -526,11 +531,15 @@ void MoveEnemy()
 				/*gotoxy(enemy[i].x, enemy[i].y);*/
 				//SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 6);
 				/*puts("★");*/
+
 				SetColor(6);
 				WriteBuffer(enemy[i].x, enemy[i].y, "★");
+				SetColor(7);
 				FlippingBuffer();
+				SetColor(6);
 				WriteBuffer(enemy[i].x, enemy[i].y, "★");
 				SetColor(7);
+
 				//SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 			}
 		}
