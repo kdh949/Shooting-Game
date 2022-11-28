@@ -54,40 +54,36 @@ void color(int n) {
 #define MAXBULLET 8
 #define MAXENEMY 10
 
-BOOL IsKeyDown(int Key)
-{
+BOOL IsKeyDown(int Key) {
 	return ((GetAsyncKeyState(Key) & 0x8000) != 0);
 	// GetAsyncKeyState : ÇöÀç ¹«½¼ Å°°¡ ÀÔ·ÂµÇ´ÂÁö È®ÀÎ
 	// 0x8000 : ÀÌÀü¿¡ ´©¸¥ ÀûÀÌ ¾ø°í È£Ãâ ½ÃÁ¡¿¡´Â ´­·ÁÀÖ´Â »óÅÂ
 }
 
-struct player
-{
+struct player {
 	int x;
 	int y;
 	int hp;
 	BOOL exist;
 } player;
 
-struct bullet
-{
+struct bullet {
 	int x;
 	int y;
 	BOOL exist;
 } pBullet[MAXBULLET];
 
-struct Enemy
-{
+struct Enemy {
 	int x, y;
 	int direction;
 	int count;
 	BOOL exist;
 } enemy[MAXENEMY];
 
-struct score {
+typedef struct _Score {
 	char nick[10];
 	int score;
-}list[50];
+}scr;
 
 void PlayerHit();
 void CreateEnemy();
@@ -99,14 +95,12 @@ void MoveBullet();
 void TextEnemyFrame(int frame);
 void Enemyfall();
 void ScoreBoard(char nick[10], int score, int mode);
-void int_swap(int* a, int* b);
-void char_swap(char a[10], char b[10]);
+void struct_swap(scr* a, scr* b);
 
 int score = 0;
 int enemyframe = 3;
 
-int main()
-{
+int main() {
 	player.x = UX;
 	player.y = UY;
 	player.hp = 3;
@@ -134,6 +128,7 @@ int main()
 	int count = 0;
 	while (1) {
 		PrintFloor();
+		PrintWall();
 		gotoxy(player.x, player.y);
 		printf("U¡ÜU");
 		if (count % 2 == 0)
@@ -228,24 +223,23 @@ int main()
 		count++;
 	}
 
-	ScoreBoard(nick, score, 1);
+	ScoreBoard(nick, score, 1); //ÃÖÁ¾ Á¡¼ö¸¦ ÆÄÀÏ¿¡ ÀúÀå
 	system("cls");
 	gotoxy(UX, UY);
 	printf(" Game Over");
 	gotoxy(UX, UY + 2);
 	printf("ÃÖÁ¾Á¡¼ö : %d", score);
+	ScoreBoard(nick, score, 2); //¼øÀ§ÆÇ Ãâ·Â
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
 	Sleep(1000);
 	system("cls");
-	ScoreBoard(nick, score, 2);
 	Sleep(1000);
 	getch();
 
 	return 0;
 }
 
-void PlayerHit()
-{
+void PlayerHit() {
 	for (int i = 0; i < MAXENEMY; i++)
 	{
 		if (enemy[i].exist == FALSE) continue;
@@ -259,8 +253,7 @@ void PlayerHit()
 	}
 }
 
-void CreateEnemy()
-{
+void CreateEnemy() {
 	int starting_point;
 	for (int i = 0; i < MAXENEMY; i++)
 	{
@@ -296,8 +289,7 @@ void CreateEnemy()
 	}
 }
 
-void CreateBullet()
-{
+void CreateBullet() {
 	for (int i = 0; i < MAXBULLET; i++)
 	{
 		if (pBullet[i].exist == FALSE)
@@ -310,8 +302,7 @@ void CreateBullet()
 	}
 }
 
-void MoveEnemy()
-{
+void MoveEnemy() {
 	for (int i = 0; i < MAXENEMY; i++)
 	{
 		if (enemy[i].exist == TRUE)
@@ -406,8 +397,7 @@ void MoveEnemy()
 	}
 }
 
-void Enemyfall()
-{
+void Enemyfall() {
 	for (int i = 0; i < MAXENEMY; i++)
 	{
 		if (enemy[i].exist == FALSE)
@@ -450,8 +440,7 @@ void MoveBullet() {
 	}
 }
 
-void TextEnemyFrame(int frame)
-{
+void TextEnemyFrame(int frame) {
 	int textframe = 0;
 	switch (frame)
 	{
@@ -478,17 +467,18 @@ void TextEnemyFrame(int frame)
 }
 
 void PrintWall() {
-	//gotoxy(BX, 0);
-	//printf("¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì");
-	//gotoxy(BX, 27);
-	//printf("¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì");
+	gotoxy(BX, 0);
+	printf("¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì");
+	gotoxy(BX, 27);
+	printf("¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì¢Ì");
 
-	for (int i = BX; i < BW + 1; i++) {
-		gotoxy(i, 0);
-		printf("¢Ì");
-		gotoxy(i, 27);
-		printf("¢Ì");
-	}
+	//for (int i = BX; i < BW + 1; i++) {
+	//	gotoxy(i, 0);
+	//	printf("¢Ì");
+	//	gotoxy(i, 27);
+	//	printf("¢Ì");
+	//}
+
 
 	for (int i = BY; i < BH + 1; i++)
 	{
@@ -549,46 +539,58 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 	if (mode == 1) { //¾²±â¸ðµå
 		fp = fopen("score.txt", "a");
 		fprintf(fp, "%s %d\n", nick, new_score);
-		fclose(fp);
+		fclose(fp); //Ãâ·Â½ºÆ®¸² ÇØÁ¦
 	}
 
 	if (mode == 2) { //ÀÐ±â¸ðµå
+		scr list[50];
+
+		fp = fopen("score.txt", "r");
+
+		if (fp == NULL) {
+			fp = fopen("score.txt", "w"); //score.txt°¡ ¾ø´Ù¸é »õ·Ó°Ô ÆÄÀÏ»ý¼º
+			fclose(fp);
+		}
+
 		fp = fopen("score.txt", "r");
 
 		if (fp == NULL) {
 			fprintf(stderr, "¿À·ù¹ß»ý!!");
+			Sleep(2000);
 			exit(0);
 		}
 
 		/* µ¥ÀÌÅÍ¸¦ ºÒ·¯¿Í¼­ ¹è¿­¿¡ ÀúÀåÇÏ´Â ºÎºÐ */
-		int n = 0;
+		int n = 0; 
 		while (feof(fp) == 0) {
 			fscanf(fp, "%s %d\n", list[n].nick, &list[n].score);
 			n++;
 		}
-		fclose(fp);
+		fclose(fp); //ÀÔ·Â ½ºÆ®¸² ÇØÁ¦
 
 		/* °ª Á¤·Ä ÈÄ ¹è¿­ º¯°æ ºÎºÐ */
-		for (int i = 0; i < n - 1; i++)
-		{
-			for (int j = i + 1; j < n; j++)
-			{
-				if (list[i].score < list[j].score)
-				{
-					int_swap(&list[i].score, &list[j].score);
-					char_swap(list[i].nick, list[j].nick);
+		for (int i = 0; i < n - 1; i++)	{
+			for (int j = i + 1; j < n; j++)	{
+				if (list[i].score < list[j].score) {
+					struct_swap(&list[i], &list[j]);
 				}
 			}
 		}
 
-		/* µ¥ÀÌÅÍ Ãâ·Â ºÎºÐ */
+
 		printf("µî¼ö  %-12s½ºÄÚ¾î\n", "´Ð³×ÀÓ"); //Á¡¼öÆÇ Ãâ·Â »óÀ§ ¶óº§
-		if (n == 0) {
-			printf("===== ¼øÀ§°¡ ¾ø½À´Ï´Ù! ====");
+
+		/* ¼øÀ§ÆÇ ÃÖÃÊ ½ÇÇà½Ã ¿¹¿Ü¸Þ½ÃÁö Ãâ·ÂºÎºÐ */
+		if (list[0].score == 0) { //¼øÀ§¸¦ ­„·ÂÇÒ »ç¶÷ÀÌ ¾ø´Ù¸é
+			printf("===== ¼øÀ§°¡ ¾ø½À´Ï´Ù! ====\n");
+			return 0; //½ºÄÚ¾îº¸µå Á¾·á
 		}
+
+		/* µ¥ÀÌÅÍ Ãâ·Â ºÎºÐ */
 		int rank = 0;
 		int recursive = 0;
 		for (int i = 0; i < n; i++) {
+			/* µ¿Á¡ÀÚ ¹ß»ý½Ã ¿¹¿ÜÃ³¸® */
 			if (i > 0 && (list[i].score == list[i - 1].score)) { //µ¿Á¡ÀÌ¶ó¸é
 				printf(" %-6d%-12s%d\n", rank, list[i].nick, list[i].score);
 				recursive++;
@@ -606,16 +608,10 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 
 }
 
-void int_swap(int* a, int* b) {
-	int tmp;
+/* ±¸Á¶Ã¼ °ª ±³È¯*/
+void struct_swap(scr* a, scr* b) {
+	scr tmp;
 	tmp = *a;
 	*a = *b;
 	*b = tmp;
-}
-
-void char_swap(char a[10], char b[10]) {
-	char tmp[10];
-	strcpy(tmp, a);
-	strcpy(a, b);
-	strcpy(b, tmp);
 }
