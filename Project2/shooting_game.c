@@ -2,19 +2,20 @@
 * 1. 왼쪽 비행기 안닿게(1칸 띄우기)
 * 2. 비행기(l-o-l), 적디자인 (ж)
 * 3. 색상 정하는 것 -비행기 : 흰색, 총알: 민트/하늘색, 테두리: 그대로, 적: 그대로,
-* 4. 벽면이 움직이고, 적이 깜빡거리고
+* 4. 벽면이 움직이고, 적이 깜빡거리고 -> 어려움 확인
 * 5. 난이도 (적이 출현하는 속도)
 * 6. 총알속도 조절 설명  (+, - 설명)
 * 7. 종료화면을 화려하게
 * 8. 적한테 부딪혔을때 비행기 색상 빨간색으로 (0.3초 정도) 바뀜
 * 9. 감점기준이 비행기 어디든지 닿았을 때
-* 10. *파일포인터 이용 -> 순위표(점수 높은 순 정렬/등수), 닉네임 입력/10등까지만, score.txt (닉네임 점수\n) //일부완료
-* 11. 계속 하겠는지 확인
+* 10. *파일포인터 이용 -> 순위표(점수 높은 순 정렬/등수), 닉네임 입력/10등까지만, score.txt (닉네임 점수\n) //완료=아마도
+* 11. 계속 하겠는지 확인 
 */
 
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
+#include <WinUser.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -23,17 +24,11 @@ void delay(int n) {
 	Sleep(n);
 }
 
-void gotoxy(int x, int y) { //gotoxy함수 
+/* gotoxy 함수 */
+void gotoxy(int x, int y) {
 	COORD pos = { x,y };
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
-
-
-/* cmd창 좌표 이동 함수 */
-//void gotoxy(int x, int y) {
-// 	COORD Cur = { x, y }; //좌표를 정의하는 구조체를 x, y로 초기화
-//	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Cur);
-//}
 
 /* cmd창 커서 표시 제어함수 */
 void showcursor(int bShow) {
@@ -101,14 +96,6 @@ int score = 0;
 int enemyframe = 3;
 
 int main() {
-	player.x = UX;
-	player.y = UY;
-	player.hp = 3;
-
-	for (int i = 0; i < MAXENEMY; i++)
-		enemy[i].count = 0;
-
-	srand((unsigned)time(NULL));
 	system("cls");
 
 	ScoreBoard(1, 1, 2); //test 곧 삭제예정
@@ -117,8 +104,21 @@ int main() {
 
 	printf("닉네임을 입력해주세요!: ");
 	scanf("%s", nick);
-	system("cls");
 
+replay:
+
+	player.x = UX;
+	player.y = UY;
+	player.hp = 3;
+
+	score = 0;
+	enemyframe = 3;
+
+	for (int i = 0; i < MAXENEMY; i++)
+		enemy[i].count = 0;
+
+	srand((unsigned)time(NULL));
+	system("cls");
 	showcursor(0); //커서 숨기기
 	gotoxy(player.x, player.y);
 	printf("U★U");
@@ -225,11 +225,27 @@ int main() {
 
 	ScoreBoard(nick, score, 1); //최종 점수를 파일에 저장
 	system("cls");
+
+	char set;
+
 	gotoxy(UX, UY);
 	printf(" Game Over");
+
 	gotoxy(UX, UY + 2);
 	printf("최종점수 : %d", score);
+
+	gotoxy(UX, UY+10);
 	ScoreBoard(nick, score, 2); //순위판 출력
+
+	gotoxy(UX, UY-10);
+	printf("다시하기_R / 종료_Q");
+	while (1) {
+		if (IsKeyDown(0x52)) //R키
+			goto replay;
+		if(IsKeyDown(0x51)) //Q키
+			break;
+	}
+
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
 	Sleep(1000);
 	system("cls");
@@ -577,7 +593,6 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 			}
 		}
 
-
 		printf("등수  %-12s스코어\n", "닉네임"); //점수판 출력 상위 라벨
 
 		/* 순위판 최초 실행시 예외메시지 출력부분 */
@@ -608,7 +623,7 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 
 }
 
-/* 구조체 값 교환*/
+/* 구조체 교환함수 */
 void struct_swap(scr* a, scr* b) {
 	scr tmp;
 	tmp = *a;
