@@ -9,7 +9,7 @@
 * 8. ÀûÇÑÅ× ºÎµúÇûÀ»¶§ ºñÇà±â »ö»ó »¡°£»öÀ¸·Î (0.3ÃÊ Á¤µµ) ¹Ù²ñ
 * 9. °¨Á¡±âÁØÀÌ ºñÇà±â ¾îµğµçÁö ´ê¾ÒÀ» ¶§
 * 10. *ÆÄÀÏÆ÷ÀÎÅÍ ÀÌ¿ë -> ¼øÀ§Ç¥(Á¡¼ö ³ôÀº ¼ø Á¤·Ä/µî¼ö), ´Ğ³×ÀÓ ÀÔ·Â/10µî±îÁö¸¸, score.txt (´Ğ³×ÀÓ Á¡¼ö\n) //¿Ï·á=¾Æ¸¶µµ
-* 11. °è¼Ó ÇÏ°Ú´ÂÁö È®ÀÎ 
+* 11. °è¼Ó ÇÏ°Ú´ÂÁö È®ÀÎ => ¿Ï·á
 */
 
 #include <stdio.h>
@@ -18,6 +18,7 @@
 #include <WinUser.h>
 #include <stdlib.h>
 #include <time.h>
+#include <locale.h>
 
 /* Áö¿¬ ÇÔ¼ö */
 void delay(int n) {
@@ -98,7 +99,7 @@ int enemyframe = 3;
 int main() {
 	system("cls");
 
-	ScoreBoard(1, 1, 2); //test °ğ »èÁ¦¿¹Á¤
+	ScoreBoard("1", 1, 2); //test °ğ »èÁ¦¿¹Á¤
 
 	char nick[10];
 
@@ -553,6 +554,7 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 	FILE* fp;
 
 	if (mode == 1) { //¾²±â¸ğµå
+		setlocale(LC_ALL, "");
 		fp = fopen("score.txt", "a");
 		fprintf(fp, "%s %d\n", nick, new_score);
 		fclose(fp); //Ãâ·Â½ºÆ®¸² ÇØÁ¦
@@ -561,11 +563,19 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 	if (mode == 2) { //ÀĞ±â¸ğµå
 		scr list[50];
 
+		setlocale(LC_ALL, "");
+
 		fp = fopen("score.txt", "r");
 
+		/* ¼øÀ§ÆÇ ÃÖÃÊ ½ÇÇà½Ã ÆÄÀÏ»ı¼º+¿¹¿Ü¸Ş½ÃÁö Ãâ·ÂºÎºĞ */
 		if (fp == NULL) {
 			fp = fopen("score.txt", "w"); //score.txt°¡ ¾ø´Ù¸é »õ·Ó°Ô ÆÄÀÏ»ı¼º
 			fclose(fp);
+
+			printf("µî¼ö  %-12s½ºÄÚ¾î\n", "´Ğ³×ÀÓ"); //Á¡¼öÆÇ Ãâ·Â »óÀ§ ¶óº§
+			printf("===== ¼øÀ§°¡ ¾ø½À´Ï´Ù! =====\n");
+
+			return 0;
 		}
 
 		fp = fopen("score.txt", "r");
@@ -578,11 +588,19 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 
 		/* µ¥ÀÌÅÍ¸¦ ºÒ·¯¿Í¼­ ¹è¿­¿¡ ÀúÀåÇÏ´Â ºÎºĞ */
 		int n = 0; 
-		while (feof(fp) == 0) {
+		while (!feof(fp)) {
 			fscanf(fp, "%s %d\n", list[n].nick, &list[n].score);
 			n++;
 		}
 		fclose(fp); //ÀÔ·Â ½ºÆ®¸² ÇØÁ¦
+
+		printf("µî¼ö  %-12s½ºÄÚ¾î\n", "´Ğ³×ÀÓ"); //Á¡¼öÆÇ Ãâ·Â »óÀ§ ¶óº§
+
+		/* ¼øÀ§ÆÇ ÃÖÃÊ ½ÇÇà½Ã ¿¹¿Ü¸Ş½ÃÁö Ãâ·ÂºÎºĞ */
+		if (n == 0) { //¼øÀ§¸¦ Ãâ·ÂÇÒ »ç¶÷ÀÌ ¾ø´Ù¸é
+			printf("===== ¼øÀ§°¡ ¾ø½À´Ï´Ù! =====\n");
+			return 0; //½ºÄÚ¾îº¸µå Á¾·á
+		}
 
 		/* °ª Á¤·Ä ÈÄ ¹è¿­ º¯°æ ºÎºĞ */
 		for (int i = 0; i < n - 1; i++)	{
@@ -593,13 +611,6 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 			}
 		}
 
-		printf("µî¼ö  %-12s½ºÄÚ¾î\n", "´Ğ³×ÀÓ"); //Á¡¼öÆÇ Ãâ·Â »óÀ§ ¶óº§
-
-		/* ¼øÀ§ÆÇ ÃÖÃÊ ½ÇÇà½Ã ¿¹¿Ü¸Ş½ÃÁö Ãâ·ÂºÎºĞ */
-		if (list[0].score == 0) { //¼øÀ§¸¦ ­„·ÂÇÒ »ç¶÷ÀÌ ¾ø´Ù¸é
-			printf("===== ¼øÀ§°¡ ¾ø½À´Ï´Ù! ====\n");
-			return 0; //½ºÄÚ¾îº¸µå Á¾·á
-		}
 
 		/* µ¥ÀÌÅÍ Ãâ·Â ºÎºĞ */
 		int rank = 0;
