@@ -4,13 +4,18 @@
 * 3. 색상 정하는 것 -비행기 : 흰색, 총알: 민트/하늘색, 테두리: 그대로, 적: 그대로,
 * 4. 벽면이 움직이고, 적이 깜빡거리고 -> 어려움 확인
 * 5. 난이도 (적이 출현하는 속도)
-* 6. 총알속도 조절 설명  (+, - 설명)
+* 6. 총알속도 조절 설명  (+, - 설명) => 삭제로 결정
 * 7. 종료화면을 화려하게
 * 8. 적한테 부딪혔을때 비행기 색상 빨간색으로 (0.3초 정도) 바뀜
 * 9. 감점기준이 비행기 어디든지 닿았을 때
 * 10. *파일포인터 이용 -> 순위표(점수 높은 순 정렬/등수), 닉네임 입력/10등까지만, score.txt (닉네임 점수\n) //완료=아마도
 * 11. 계속 하겠는지 확인 => 완료
 * 12. 총알속도가 빨라지면 적 속도도 빨라지는지 체크!!
+* 
+* 
+* ***HP = pink
+* ***Enemy = red
+* ***Bullet = sky
 */
 
 #include <stdio.h>
@@ -20,6 +25,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <locale.h>
+
 
 /* 지연 함수 */
 void delay(int n) {
@@ -57,7 +63,7 @@ BOOL IsKeyDown(int Key) {
 	// 0x8000 : 이전에 누른 적이 없고 호출 시점에는 눌려있는 상태
 }
 
-struct player {
+struct _player {
 	int x;
 	int y;
 	int hp;
@@ -81,6 +87,8 @@ typedef struct _Score {
 	char nick[10];
 	int score;
 }scr;
+
+enum _Color { GREY = 7, DARK_GREY, BLUE, GREEN, SKYBLUE, RED, VIOLET, YELLOW, WHITE };
 
 void PlayerHit();
 void CreateEnemy();
@@ -194,21 +202,21 @@ replay:
 			gotoxy(35, 28);
 			system("PAUSE");
 		}
-		if (count % 10 == 0)
-		{
-			if (IsKeyDown(0x58)) // X키
-			{
-				enemyframe -= 1;
-				if (enemyframe <= 1)
-					enemyframe = 1;
-			}
-			if (IsKeyDown(0x5A)) // Z키
-			{
-				enemyframe += 1;
-				if (enemyframe >= 6)
-					enemyframe = 6;
-			}
-		}
+		//if (count % 10 == 0)
+		//{
+		//	if (IsKeyDown(0x58)) // X키
+		//	{
+		//		enemyframe -= 1;
+		//		if (enemyframe <= 1)
+		//			enemyframe = 1;
+		//	}
+		//	if (IsKeyDown(0x5A)) // Z키
+		//	{
+		//		enemyframe += 1;
+		//		if (enemyframe >= 6)
+		//			enemyframe = 6;
+		//	}
+		//}
 		if (rand() % 5 == 0)
 		{
 			CreateEnemy();
@@ -248,7 +256,7 @@ replay:
 			break;
 	}
 
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 0);
+	color(0);
 	Sleep(1000);
 	system("cls");
 	Sleep(1000);
@@ -257,11 +265,12 @@ replay:
 	return 0;
 }
 
+/* 플레이어와 적의 접촉여부 판정 함수 */
 void PlayerHit() {
 	for (int i = 0; i < MAXENEMY; i++)
 	{
 		if (enemy[i].exist == FALSE) continue;
-		if (enemy[i].y == player.y && abs(enemy[i].x - player.x) <= 0) //abs : 절댓값 함수
+		if (enemy[i].y == player.y && abs(enemy[i].x - player.x) <= 1) //abs : 절댓값 함수
 		{
 			player.hp -= 1;
 			if (player.hp <= 0)
@@ -407,14 +416,15 @@ void MoveEnemy() {
 					break;
 				}
 				gotoxy(enemy[i].x, enemy[i].y);
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 6);
-				puts("★");
-				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+				color(RED);
+				printf("★");
+				color(GREY);
 			}
 		}
 	}
 }
 
+/* 총알과 적의 접촉여부 판정함수 */
 void Enemyfall() {
 	for (int i = 0; i < MAXENEMY; i++)
 	{
@@ -422,7 +432,7 @@ void Enemyfall() {
 			continue;
 		for (int j = 0; j < MAXBULLET; j++)
 		{
-			if (enemy[i].y == pBullet[j].y && abs(enemy[i].x - pBullet[j].x) <= 2)
+			if (enemy[i].y == pBullet[j].y && abs(enemy[i].x - pBullet[j].x) <= 1)
 			{
 				gotoxy(pBullet[j].x, pBullet[j].y);
 				printf("  ");
@@ -446,9 +456,9 @@ void MoveBullet() {
 			printf("  ");
 			pBullet[i].y--;
 			gotoxy(pBullet[i].x, pBullet[i].y);
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);
+			color(SKYBLUE);
 			printf("||");
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+			color(GREY);
 			if (pBullet[i].y <= 1) {
 				gotoxy(pBullet[i].x, pBullet[i].y);
 				printf("  ");
@@ -458,31 +468,31 @@ void MoveBullet() {
 	}
 }
 
-void TextEnemyFrame(int frame) {
-	int textframe = 0;
-	switch (frame)
-	{
-	case 1:
-		textframe = 6;
-		break;
-	case 2:
-		textframe = 5;
-		break;
-	case 3:
-		textframe = 4;
-		break;
-	case 4:
-		textframe = 3;
-		break;
-	case 5:
-		textframe = 2;
-		break;
-	case 6:
-		textframe = 1;
-		break;
-	}
-	printf("총알 속도 : %d", textframe);
-}
+//void TextEnemyFrame(int frame) {
+//	int textframe = 0;
+//	switch (frame)
+//	{
+//	case 1:
+//		textframe = 6;
+//		break;
+//	case 2:
+//		textframe = 5;
+//		break;
+//	case 3:
+//		textframe = 4;
+//		break;
+//	case 4:
+//		textframe = 3;
+//		break;
+//	case 5:
+//		textframe = 2;
+//		break;
+//	case 6:
+//		textframe = 1;
+//		break;
+//	}
+//	printf("총알 속도 : %d", textframe);
+//}
 
 void PrintWall() {
 	gotoxy(BX, 0);
@@ -518,19 +528,27 @@ void PrintFloor()
 	{
 	case 3:
 		gotoxy(BW + 7, 10);
+		color(VIOLET);
 		printf("♥ ♥ ♥");
+		color(GREY);
 		break;
 	case 2:
 		gotoxy(BW + 7, 10);
+		color(VIOLET);
 		printf("♥ ♥ ♡");
+		color(GREY);
 		break;
 	case 1:
 		gotoxy(BW + 7, 10);
+		color(VIOLET);
 		printf("♥ ♡ ♡");
+		color(GREY);
 		break;
 	case 0:
 		gotoxy(BW + 7, 10);
+		color(VIOLET);
 		printf("♡ ♡ ♡");
+		color(GREY);
 		break;
 	}
 
@@ -538,13 +556,13 @@ void PrintFloor()
 	printf("일시정지 : P");
 
 	gotoxy(BW + 7, 15);
-	printf("총알 속도 조절 : Z, X");
+	//printf("총알 속도 조절 : Z, X");
 
 	gotoxy(BW + 7, 17);
 	printf("공격 : SPACE");
 
 	gotoxy(BW + 7, 7);
-	TextEnemyFrame(enemyframe);
+	//TextEnemyFrame(enemyframe);
 
 	gotoxy(35, 28);
 	printf("                                        ");
@@ -555,7 +573,6 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 	FILE* fp;
 
 	if (mode == 1) { //쓰기모드
-		setlocale(LC_ALL, "");
 		fp = fopen("score.txt", "a");
 		fprintf(fp, "%s %d\n", nick, new_score);
 		fclose(fp); //출력스트림 해제
@@ -563,8 +580,6 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 
 	if (mode == 2) { //읽기모드
 		scr list[50];
-
-		setlocale(LC_ALL, "");
 
 		fp = fopen("score.txt", "r");
 
