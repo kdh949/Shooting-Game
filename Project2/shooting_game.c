@@ -108,10 +108,25 @@ int enemyframe = 3;
 int main() {
 	system("cls");
 
-	ScoreBoard("1", 1, 2); //test 곧 삭제예정
+	printf("\n\n\n");
+	printf("\t\t\t■■■ ■    ■   ■■■     ■■■  ■■■■ ■ ■     ■  ■■■ \n");
+	printf("\t\t\t■     ■    ■  ■    ■   ■    ■    ■    ■ ■■   ■ ■      \n");
+	printf("\t\t\t■■■ ■■■■ ■      ■ ■      ■   ■    ■ ■ ■  ■ ■  ■■\n");
+	printf("\t\t\t    ■ ■    ■  ■    ■   ■    ■    ■    ■ ■  ■ ■ ■    ■\n");
+	printf("\t\t\t■■■ ■    ■   ■■■     ■■■     ■    ■ ■   ■■  ■■■ \n");
+
+	printf("\n");
+
+	printf("\t\t\t\t       ■■■   ■■■  ■       ■ ■■■■\n");
+	printf("\t\t\t\t      ■       ■    ■ ■■   ■■ ■      \n");
+	printf("\t\t\t\t      ■  ■■ ■■■■ ■ ■ ■ ■ ■■■  \n");
+	printf("\t\t\t\t      ■    ■ ■    ■ ■  ■   ■ ■      \n");
+	printf("\t\t\t\t       ■■■  ■    ■ ■       ■ ■■■■\n");
+
 
 	char nick[10];
 
+	gotoxy(45, 20);
 	printf("닉네임을 입력해주세요!: ");
 	scanf("%s", nick);
 
@@ -202,21 +217,6 @@ replay:
 			gotoxy(35, 28);
 			system("PAUSE");
 		}
-		//if (count % 10 == 0)
-		//{
-		//	if (IsKeyDown(0x58)) // X키
-		//	{
-		//		enemyframe -= 1;
-		//		if (enemyframe <= 1)
-		//			enemyframe = 1;
-		//	}
-		//	if (IsKeyDown(0x5A)) // Z키
-		//	{
-		//		enemyframe += 1;
-		//		if (enemyframe >= 6)
-		//			enemyframe = 6;
-		//	}
-		//}
 		if (rand() % 5 == 0)
 		{
 			CreateEnemy();
@@ -468,31 +468,6 @@ void MoveBullet() {
 	}
 }
 
-//void TextEnemyFrame(int frame) {
-//	int textframe = 0;
-//	switch (frame)
-//	{
-//	case 1:
-//		textframe = 6;
-//		break;
-//	case 2:
-//		textframe = 5;
-//		break;
-//	case 3:
-//		textframe = 4;
-//		break;
-//	case 4:
-//		textframe = 3;
-//		break;
-//	case 5:
-//		textframe = 2;
-//		break;
-//	case 6:
-//		textframe = 1;
-//		break;
-//	}
-//	printf("총알 속도 : %d", textframe);
-//}
 
 void PrintWall() {
 	gotoxy(BX, 0);
