@@ -126,7 +126,7 @@ int main() {
 
 	char nick[10];
 
-	gotoxy(45, 20);
+	gotoxy(40, 20);
 	printf("닉네임을 입력해주세요!: ");
 	scanf("%s", nick);
 
@@ -238,13 +238,16 @@ replay:
 
 	char set;
 
-	gotoxy(UX, UY);
-	printf(" Game Over");
+	printf("\n\n\n\n\n");
+	printf("\t\t\t ■■■   ■■■  ■       ■ ■■■■   ■■■    ■    ■  ■■■■  ■■■\n");
+	printf("\t\t\t■       ■    ■ ■■   ■■ ■        ■    ■   ■    ■  ■        ■   ■\n");
+	printf("\t\t\t■  ■■ ■■■■ ■ ■ ■ ■ ■■■   ■      ■  ■    ■  ■■■    ■■■\n");
+	printf("\t\t\t■    ■ ■    ■ ■  ■   ■ ■        ■    ■    ■  ■   ■        ■   ■\n");
+	printf("\t\t\t ■■■  ■    ■ ■       ■ ■■■■   ■■■      ■■    ■■■■  ■    ■\n");
 
-	gotoxy(UX, UY + 2);
+	gotoxy(UX, UY+2);
 	printf("최종점수 : %d", score);
 
-	gotoxy(UX, UY+10);
 	ScoreBoard(nick, score, 2); //순위판 출력
 
 	gotoxy(UX, UY-10);
@@ -475,14 +478,6 @@ void PrintWall() {
 	gotoxy(BX, 27);
 	printf("▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩▩");
 
-	//for (int i = BX; i < BW + 1; i++) {
-	//	gotoxy(i, 0);
-	//	printf("▩");
-	//	gotoxy(i, 27);
-	//	printf("▩");
-	//}
-
-
 	for (int i = BY; i < BH + 1; i++)
 	{
 		gotoxy(20, i);
@@ -530,14 +525,9 @@ void PrintFloor()
 	gotoxy(BW + 7, 13);
 	printf("일시정지 : P");
 
-	gotoxy(BW + 7, 15);
-	//printf("총알 속도 조절 : Z, X");
-
 	gotoxy(BW + 7, 17);
 	printf("공격 : SPACE");
 
-	gotoxy(BW + 7, 7);
-	//TextEnemyFrame(enemyframe);
 
 	gotoxy(35, 28);
 	printf("                                        ");
@@ -585,7 +575,10 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 		}
 		fclose(fp); //입력 스트림 해제
 
+		gotoxy(UX - 4, UY + 5);
 		printf("등수  %-12s스코어\n", "닉네임"); //점수판 출력 상위 라벨
+		gotoxy(UX - 5, UY + 6);
+		printf("==============================\n");
 
 		/* 순위판 최초 실행시 예외메시지 출력부분 */
 		if (n == 0) { //순위를 출력할 사람이 없다면
@@ -602,13 +595,13 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 			}
 		}
 
-
 		/* 데이터 출력 부분 */
 		int rank = 0;
 		int recursive = 0;
 		for (int i = 0; i < n; i++) {
 			/* 동점자 발생시 예외처리 */
 			if (i > 0 && (list[i].score == list[i - 1].score)) { //동점이라면
+				gotoxy(UX-4, UY + 7 + i);
 				printf(" %-6d%-12s%d\n", rank, list[i].nick, list[i].score);
 				recursive++;
 				continue;
@@ -618,6 +611,7 @@ void ScoreBoard(char nick[10], int new_score, int mode) {
 			rank += recursive;
 			if (rank > 10) //10등까지만 출력
 				break;
+			gotoxy(UX-4, UY + 7 + i);
 			printf(" %-6d%-12s%d\n", rank, list[i].nick, list[i].score);
 			recursive = 0;
 		}
