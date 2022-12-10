@@ -24,7 +24,6 @@
 #include <WinUser.h>
 #include <stdlib.h>
 #include <time.h>
-#include <locale.h>
 
 
 /* 지연 함수 */
